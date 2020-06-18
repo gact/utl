@@ -50,7 +50,7 @@ set based on the number of markers being plotted.}
 \description{
 Plotting function to plot either a LOD curve plot or Manhattan plot, using methods based on
 \pkg{R/qtl} \code{plot.scanone} (Broman \emph{et al.} 2003) and \pkg{qqman} \code{manhattan}
-(Turner 2014), respectively. If you find either useful, please give credit where it is due
+(Turner 2018), respectively. If you find either useful, please give credit where it is due
 to the original author(s).
 }
 \examples{
@@ -98,8 +98,8 @@ Broman KW, Wu H, Sen S, Churchill GA (2003) R/qtl: QTL mapping in experimental
 crosses. \emph{Bioinformatics} \bold{19}:889-890.
 (\href{http://www.ncbi.nlm.nih.gov/pubmed/12724300}{PubMed})
 
-Turner SD (2014) qqman: an R package for visualizing GWAS results using Q-Q and
-manhattan plots. (\href{http://dx.doi.org/10.1101/005165}{bioRXiv})
+Turner SD (2018) qqman: an R package for visualizing GWAS results using Q-Q and
+manhattan plots. (\href{https://doi.org/10.21105/joss.00731}{Journal of Open Source Software})
 }
 \seealso{
 \href{http://www.rqtl.org}{R/qtl website}
