@@ -1,6 +1,6 @@
-# Start of is_pseudomarker_id.R ####################################################################
+# Start of is_pseudomarker_id.R
 
-# is_pseudomarker_id -------------------------------------------------------------------------------
+# is_pseudomarker_id
 #' Test for \pkg{R/qtl} pseudomarker IDs.
 #'
 #' @param x Character vector of locus IDs.
@@ -18,4 +18,4 @@ is_pseudomarker_id <- function(x) {
             grepl('^c([[:alnum:]]+)[.]loc(-?[[:digit:]]+(?:[.][[:digit:]]+)?)$', x) )
 }
 
-# End of is_pseudomarker_id.R ######################################################################
+# End of is_pseudomarker_id.R

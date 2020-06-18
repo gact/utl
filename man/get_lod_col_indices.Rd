@@ -11,11 +11,9 @@ get_lod_col_indices(x, lodcolumns = NULL, strict = FALSE)
 
 \method{get_lod_col_indices}{scanone}(x, lodcolumns = NULL, strict = FALSE)
 
-\method{get_lod_col_indices}{scanoneperm}(x, lodcolumns = NULL,
-  strict = FALSE)
+\method{get_lod_col_indices}{scanoneperm}(x, lodcolumns = NULL, strict = FALSE)
 
-\method{get_lod_col_indices}{summary.scanoneperm}(x, lodcolumns = NULL,
-  strict = FALSE)
+\method{get_lod_col_indices}{summary.scanoneperm}(x, lodcolumns = NULL, strict = FALSE)
 }
 \arguments{
 \item{x}{An \pkg{R/qtl} \code{scanone}, \code{scanoneperm}, or \code{summary.scanoneperm} object.}

@@ -1,6 +1,6 @@
-# Start of get_qtl_intervals.R #####################################################################
+# Start of get_qtl_intervals.R
 
-# get_qtl_intervals --------------------------------------------------------------------------------
+# get_qtl_intervals
 #' Get list of QTL intervals.
 #'
 #' Given a specified LOD \code{threshold} and associated significance level \code{alpha}, this
@@ -79,7 +79,7 @@
 get_qtl_intervals <- function(x, chr=NULL, lodcolumn=NULL, threshold=NULL, ci.function=c('lodint',
     'bayesint'), drop=1.5, prob=0.95, expandtomarkers=FALSE) {
 
-    # validate arguments ---------------------------------------------------------------------------
+    # validate arguments
 
     # Validate scanone object.
     stopifnot( 'scanone' %in% class(x) )
@@ -137,7 +137,7 @@ get_qtl_intervals <- function(x, chr=NULL, lodcolumn=NULL, threshold=NULL, ci.fu
     # Validate marker expansion option.
     stopifnot( isTRUE(expandtomarkers) || identical(FALSE, expandtomarkers) )
 
-    # prepare data ---------------------------------------------------------------------------------
+    # prepare data
 
     # Get LOD profile for the given LOD column.
     poscol.indices <- which( colnames(x) %in% c('chr', 'pos') )
@@ -162,7 +162,7 @@ get_qtl_intervals <- function(x, chr=NULL, lodcolumn=NULL, threshold=NULL, ci.fu
         return(intervals)
     }
 
-    # find QTL peaks -------------------------------------------------------------------------------
+    # find QTL peaks
 
     # Create LOD character mask. Regions with significant LOD values are marked
     # with the sequence name, while all other loci are marked with NA.
@@ -188,7 +188,7 @@ get_qtl_intervals <- function(x, chr=NULL, lodcolumn=NULL, threshold=NULL, ci.fu
     # Get row index of peak for each significant region, taking first peak in case of ties.
     peak.indices <- unlist(lapply(significant.rows, function(rows) rows[which.max(x[rows, 'lod'])]))
 
-    # get QTL intervals ----------------------------------------------------------------------------
+    # get QTL intervals
 
     # Get list of sequence ranges.
     index.ranges <- lapply(chr, function (chr.seq) range(which( x$chr == chr.seq )))
@@ -383,4 +383,4 @@ get_qtl_intervals <- function(x, chr=NULL, lodcolumn=NULL, threshold=NULL, ci.fu
     return(intervals)
 }
 
-# End of get_qtl_intervals.R #######################################################################
+# End of get_qtl_intervals.R

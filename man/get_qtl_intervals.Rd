@@ -4,9 +4,16 @@
 \alias{get_qtl_intervals}
 \title{Get list of QTL intervals.}
 \usage{
-get_qtl_intervals(x, chr = NULL, lodcolumn = NULL, threshold = NULL,
-  ci.function = c("lodint", "bayesint"), drop = 1.5, prob = 0.95,
-  expandtomarkers = FALSE)
+get_qtl_intervals(
+  x,
+  chr = NULL,
+  lodcolumn = NULL,
+  threshold = NULL,
+  ci.function = c("lodint", "bayesint"),
+  drop = 1.5,
+  prob = 0.95,
+  expandtomarkers = FALSE
+)
 }
 \arguments{
 \item{x}{An \pkg{R/qtl} \code{scanone} object.}

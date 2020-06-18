@@ -4,9 +4,17 @@
 \alias{plot_qtl_scanone}
 \title{Draw a plot of an \pkg{R/qtl} \code{scanone} result.}
 \usage{
-plot_qtl_scanone(x, chr = NULL, lodcolumn = NULL, threshold = NULL,
-  qtl.intervals = NULL, col = c("gray10", "gray60"), gap = 25L,
-  phenotype = NULL, type = NULL)
+plot_qtl_scanone(
+  x,
+  chr = NULL,
+  lodcolumn = NULL,
+  threshold = NULL,
+  qtl.intervals = NULL,
+  col = c("gray10", "gray60"),
+  gap = 25L,
+  phenotype = NULL,
+  type = NULL
+)
 }
 \arguments{
 \item{x}{An \pkg{R/qtl} \code{scanone} object.}

@@ -1,6 +1,6 @@
-# Start of internal.R ##############################################################################
+# Start of internal.R
 
-# get_indices --------------------------------------------------------------------------------------
+# get_indices
 #' Get indices of object elements.
 #'
 #' Get the indices of \code{x}, as constrained by the \code{requested} parameter. If using this
@@ -91,7 +91,7 @@ get_indices <- function(x, requested=NULL, strict=FALSE) {
     return(indices)
 }
 
-# get_lod_col_index --------------------------------------------------------------------------------
+# get_lod_col_index
 #' Get LOD column index.
 #'
 #' @param x An \pkg{R/qtl} \code{scanone}, \code{scanoneperm}, or \code{summary.scanoneperm} object.
@@ -117,7 +117,7 @@ get_lod_col_index <- function(x, lodcolumn=NULL) {
     return(lodcol.indices[1L])
 }
 
-# get_lod_col_indices ------------------------------------------------------------------------------
+# get_lod_col_indices
 #' Get LOD column indices.
 #'
 #' @param x An \pkg{R/qtl} \code{scanone}, \code{scanoneperm}, or \code{summary.scanoneperm} object.
@@ -136,7 +136,7 @@ get_lod_col_indices <- function(x, lodcolumns=NULL, strict=FALSE) {
     UseMethod('get_lod_col_indices', x)
 }
 
-# get_lod_col_indices.scanone ----------------------------------------------------------------------
+# get_lod_col_indices.scanone
 #' @method get_lod_col_indices scanone
 #' @rdname get_lod_col_indices
 get_lod_col_indices.scanone <- function(x, lodcolumns=NULL, strict=FALSE) {
@@ -148,7 +148,7 @@ get_lod_col_indices.scanone <- function(x, lodcolumns=NULL, strict=FALSE) {
     return(indices)
 }
 
-# get_lod_col_indices.scanoneperm ------------------------------------------------------------------
+# get_lod_col_indices.scanoneperm
 #' @method get_lod_col_indices scanoneperm
 #' @rdname get_lod_col_indices
 get_lod_col_indices.scanoneperm <- function(x, lodcolumns=NULL, strict=FALSE) {
@@ -160,7 +160,7 @@ get_lod_col_indices.scanoneperm <- function(x, lodcolumns=NULL, strict=FALSE) {
     return(indices)
 }
 
-# get_lod_col_indices.summary.scanoneperm ----------------------------------------------------------
+# get_lod_col_indices.summary.scanoneperm
 #' @export
 #' @method get_lod_col_indices summary.scanoneperm
 #' @rdname get_lod_col_indices
@@ -173,7 +173,7 @@ get_lod_col_indices.summary.scanoneperm <- function(x, lodcolumns=NULL, strict=F
     return(indices)
 }
 
-# get_run_index_list -------------------------------------------------------------------------------
+# get_run_index_list
 #' Get index list of successive runs in a vector.
 #'
 #' @param x A vector.
@@ -232,7 +232,7 @@ get_run_index_list <- function(x, na.rm=FALSE) {
     return(index.list)
 }
 
-# infer_map_precision ------------------------------------------------------------------------------
+# infer_map_precision
 #' Infer precision of map positions.
 #'
 #' @param x An \pkg{R/qtl} \code{scanone} or \code{map} object.
@@ -304,7 +304,7 @@ infer_map_precision <- function(x, tol=.Machine$double.eps^0.5) {
     return(map.precision)
 }
 
-# is_single_char -----------------------------------------------------------------------------------
+# is_single_char
 #' Test for a single character.
 #'
 #' @param x Test object.
@@ -317,7 +317,7 @@ is_single_char <- function(x) {
     return( is.character(x) && length(x) == 1L && ! is.na(x) && nchar(x) == 1L )
 }
 
-# is_single_nonnegative_number ---------------------------------------------------------------------
+# is_single_nonnegative_number
 #' Test for a single non-negative number.
 #'
 #' @param n Test object.
@@ -330,7 +330,7 @@ is_single_nonnegative_number <- function(n) {
     return( is.numeric(n) && length(n) == 1L && is.finite(n) && n >= 0.0 )
 }
 
-# is_single_nonnegative_whole_number ---------------------------------------------------------------
+# is_single_nonnegative_whole_number
 #' Test for a single non-negative whole number.
 #'
 #' @param n Test object.
@@ -345,7 +345,7 @@ is_single_nonnegative_whole_number <- function(n, tol=.Machine$double.eps^0.5) {
             abs(n - round(n)) < abs(tol) )
 }
 
-# is_single_probability ----------------------------------------------------------------------------
+# is_single_probability
 #' Test for a single valid probability.
 #'
 #' @param n Test object.
@@ -358,7 +358,7 @@ is_single_probability <- function(n) {
     return( is.numeric(n) && length(n) == 1L && is.finite(n) && n >= 0.0 && n <= 1.0 )
 }
 
-# is_single_string ---------------------------------------------------------------------------------
+# is_single_string
 #' Test for a single character string.
 #'
 #' @param x Test object.
@@ -371,7 +371,7 @@ is_single_string <- function(x) {
     return( is.character(x) && length(x) == 1L && ! is.na(x) )
 }
 
-# is_whole_number ----------------------------------------------------------------------------------
+# is_whole_number
 #' Test for whole numbers.
 #'
 #' @param n Test vector.
@@ -385,4 +385,4 @@ is_whole_number <- function(n, tol=.Machine$double.eps^0.5) {
     return( is.numeric(n) & is.finite(n) & abs(n - round(n)) < abs(tol) )
 }
 
-# End of internal.R ################################################################################
+# End of internal.R

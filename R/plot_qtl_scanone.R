@@ -1,6 +1,6 @@
-# Start of plot_qtl_scanone.R ######################################################################
+# Start of plot_qtl_scanone.R
 
-# plot_qtl_scanone ---------------------------------------------------------------------------------
+# plot_qtl_scanone
 #' Draw a plot of an \pkg{R/qtl} \code{scanone} result.
 #'
 #' Plotting function to plot either a LOD curve plot or Manhattan plot, using methods based on
@@ -87,7 +87,7 @@ plot_qtl_scanone <- function(x, chr=NULL, lodcolumn=NULL, threshold=NULL, qtl.in
     opar <- graphics::par(no.readonly=TRUE)
     on.exit(graphics::par(opar))
 
-    # validate arguments ---------------------------------------------------------------------------
+    # validate arguments
 
     # Validate scanone object.
     stopifnot( 'scanone' %in% class(x) )
@@ -182,7 +182,7 @@ plot_qtl_scanone <- function(x, chr=NULL, lodcolumn=NULL, threshold=NULL, qtl.in
         stopifnot( type %in% c('l', 'p') )
     }
 
-    # prepare data ---------------------------------------------------------------------------------
+    # prepare data
 
     # Subset scanone result by specified sequences.
     x <- x[x$chr %in% chr, ]
@@ -197,7 +197,7 @@ plot_qtl_scanone <- function(x, chr=NULL, lodcolumn=NULL, threshold=NULL, qtl.in
     # Set maximum y-value, ensure greater than or equal to one.
     max.lod <- max(x[, lodcol.index], tinfo[['threshold']], 1.0, na.rm=TRUE)
 
-    # assemble sequence plotting info --------------------------------------------------------------
+    # assemble sequence plotting info
 
     # Set width of gaps between sequences.
     gap.width <- ifelse(length(chr) > 1L, gap, 0.0)
@@ -232,7 +232,7 @@ plot_qtl_scanone <- function(x, chr=NULL, lodcolumn=NULL, threshold=NULL, qtl.in
         }
     }
 
-    # assemble general plot info -------------------------------------------------------------------
+    # assemble general plot info
 
     plot.info <- list()
 
@@ -252,7 +252,7 @@ plot_qtl_scanone <- function(x, chr=NULL, lodcolumn=NULL, threshold=NULL, qtl.in
         plot.info['Chromosome'] <- chr
     }
 
-    # draw plot ------------------------------------------------------------------------------------
+    # draw plot
 
     # Set top margin line counts, accounting for any plot info lines.
     adj.top.mar <- length(plot.info) + 4.0 # NB: minimum 4 margin lines
@@ -450,4 +450,4 @@ plot_qtl_scanone <- function(x, chr=NULL, lodcolumn=NULL, threshold=NULL, qtl.in
     return(invisible())
 }
 
-# End of plot_qtl_scanone.R ########################################################################
+# End of plot_qtl_scanone.R

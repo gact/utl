@@ -1,6 +1,6 @@
 Package: utl
 Version: 0.1.0
-Date: 2018-03-12
+Date: 2020-06-18
 Title: Utility Functions for R/qtl Analysis
 Authors@R: c(person('Thomas', 'Walsh', role=c('aut', 'cre'), email='tw164@protonmail.com'),
              person('Yue', 'Hu', role=c('aut')))
@@ -11,7 +11,7 @@ LazyData: true
 License: GPL-3
 URL: https://github.com/gact/utl
 Imports: graphics, qtl, stats, utils
-RoxygenNote: 6.0.1
+RoxygenNote: 7.1.0
 Collate: 
     'internal.R'
     'get_qtl_intervals.R'
