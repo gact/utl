@@ -6,16 +6,10 @@ website of its successor package, [R/qtl2](http://kbroman.org/qtl2/).
 
 ## Installation
 
-Before installing `utl`, you should first install `R/qtl`.
-
-This can be done with the following R command:
-
-```
-install.packages("qtl")
-```
+Before installing `utl`, you should first install its
+dependencies listed in the package `DESCRIPTION` file.
 
 Using `devtools`, `utl` can then be installed from GitHub as follows:
-
 ```
 devtools::install_github("gact/utl")
 ```
@@ -23,7 +17,6 @@ devtools::install_github("gact/utl")
 ## Documentation
 
 To view the `utl` help pages within R, input the following command:
-
 ```
 help(package=utl)
 ```

@@ -1,5 +1,37 @@
 # Start of internal.R
 
+# get_col_indices
+#' Get column indices of object.
+#'
+#' @param x An object with columns.
+#' @param requested A character vector of column names, a logical vector of
+#' length equal to the number of object columns, or a numeric vector of column
+#' indices of the input object. If this is specified, only the requested column
+#' indices are returned; otherwise, this function returns all column indices.
+#' @param strict Option indicating that \code{requested}, if specified, must
+#' be in the same order as the corresponding columns of the input object.
+#'
+#' @return Integer vector of column indices.
+#'
+#' @keywords internal
+#' @rdname get_col_indices
+get_col_indices <- function(x, requested=NULL, strict=FALSE) {
+
+    num.cols <- ncol(x)
+
+    if ( ! is_single_nonnegative_whole_number(num.cols) ) {
+        stop("cannot get column indices - object does not have columns")
+    }
+
+    available <- if ( num.cols > 0 ) { 1:num.cols } else { integer() }
+    names(available) <- colnames(x)
+
+    resolved <- get_indices(available, requested=requested, strict=strict)
+    indices <- unname(available[resolved])
+
+    return(indices)
+}
+
 # get_indices
 #' Get indices of object elements.
 #'
@@ -345,6 +377,22 @@ is_single_nonnegative_whole_number <- function(n, tol=.Machine$double.eps^0.5) {
             abs(n - round(n)) < abs(tol) )
 }
 
+# is_single_positive_whole_number
+#' Test for a single positive whole number.
+#'
+#' @param n Test object.
+#' @param tol Numeric tolerance.
+#'
+#' @return \code{TRUE} if the object is a single positive whole number;
+#' \code{FALSE} otherwise.
+#'
+#' @keywords internal
+#' @rdname is_single_positive_whole_number
+is_single_positive_whole_number <- function(n, tol=.Machine$double.eps^0.5) {
+    return( length(n) == 1 && is.numeric(n) && is.finite(n) &&
+                n > tol && abs(n - round(n)) < abs(tol) )
+}
+
 # is_single_probability
 #' Test for a single valid probability.
 #'
@@ -371,6 +419,22 @@ is_single_string <- function(x) {
     return( is.character(x) && length(x) == 1L && ! is.na(x) )
 }
 
+# is_valid_id
+#' Test identifier validity.
+#'
+#' An identifier is considered valid if it is a string
+#' containing at least one non-whitespace character.
+#'
+#' @param x Test vector.
+#'
+#' @return Logical vector indicating which elements are valid identifiers.
+#'
+#' @keywords internal
+#' @rdname is_valid_id
+is_valid_id <- function(x) {
+    return( is.character(x) & nzchar(gsub('[[:space:]]', '', x)) )
+}
+
 # is_whole_number
 #' Test for whole numbers.
 #'
@@ -383,6 +447,527 @@ is_single_string <- function(x) {
 #' @rdname is_whole_number
 is_whole_number <- function(n, tol=.Machine$double.eps^0.5) {
     return( is.numeric(n) & is.finite(n) & abs(n - round(n)) < abs(tol) )
+}
+
+# isBOOL
+#' Test for a single logical value.
+#'
+#' @param x Test object.
+#'
+#' @return \code{TRUE} if object is a single logical value;
+#' \code{FALSE} otherwise.
+#'
+#' @keywords internal
+#' @rdname isBOOL
+isBOOL <- function(x) {
+    return( isTRUE(x) | isFALSE(x) )
+}
+
+# isFALSE
+#' Test for a single \code{FALSE} value.
+#'
+#' @param x Test object.
+#'
+#' @return \code{TRUE} if object is a single \code{FALSE} value;
+#' \code{FALSE} otherwise.
+#'
+#' @keywords internal
+#' @rdname isFALSE
+isFALSE <- function(x) {
+    return( identical(FALSE, x) )
+}
+
+# make_geno_matrix
+#' Make genotype matrix from sample and founder genotype data.
+#'
+#' Given input genotype data for cross samples and their founder strains, this
+#' function assigns a genotype symbol to each locus according to the inferred
+#' combination of founder alleles.
+#'
+#' @param x Raw sample genotype \code{matrix}.
+#' @param y Raw founder genotype \code{matrix}.
+#' @param alleles Mapping of founder IDs to founder allele symbols.
+#'
+#' @return A founder genotype matrix, with genotypes encoded as integers and
+#' their corresponding genotype symbols in the attribute \code{'genotypes'}.
+#'
+#' @keywords internal
+#' @rdname make_geno_matrix
+make_geno_matrix <- function(x, y, alleles=NULL) {
+
+    founder.allele.charset <- c(LETTERS, letters)
+
+    x.samples <- rownames(x)
+    x.snps <- colnames(x)
+
+    y.samples <- rownames(y)
+    y.snps <- colnames(y)
+
+    # Check upper limit of founder sample count.
+    # NB: absolute upper limit is length of founder.allele.charset
+    if ( length(y.samples) != 2 ) {
+        stop("unsupported number of founders - '", length(y.samples), "'")
+    }
+
+    if ( ! is.null(alleles) ) {
+
+        stopifnot( is_mapping(alleles) )
+
+        founder.samples <- mapping_keys(alleles)  # NB: ensures unique sample IDs
+        founder.symbols <- as.character( mapping_values(alleles) )
+
+        unknown <- founder.samples[ ! founder.samples %in% y.samples ]
+        if ( length(unknown) > 0 ) {
+            stop("allele symbols specified for unknown founder samples - '",
+                 toString(unknown), "'")
+        }
+
+        unfound <- y.samples[ ! y.samples %in% founder.samples ]
+        if ( length(unfound) > 0 ) {
+            stop("allele symbols not specified for founder samples - '",
+                 toString(unfound), "'")
+        }
+
+        dup.alleles <- founder.symbols[ duplicated(founder.symbols) ]
+        if ( length(dup.alleles) > 0 ) {
+            stop("duplicate founder alleles - '", toString(dup.alleles), "'")
+        }
+
+        err.alleles <- founder.symbols[ ! founder.symbols %in% founder.allele.charset ]
+        if ( length(err.alleles) > 0 ) {
+            stop("invalid founder alleles - '", toString(err.alleles), "'")
+        }
+
+        names(founder.symbols) <- founder.samples
+        allele.symbols <- sort( founder.symbols )
+
+    } else {
+
+        allele.symbols <- founder.allele.charset[ seq_along(y.samples) ]
+        names(allele.symbols) <- y.samples
+    }
+
+    # Keep only loci common to samples and founders.
+    common.snps <- intersect(x.snps, y.snps)
+    x <- x[, common.snps, drop=FALSE]
+    y <- y[, common.snps, drop=FALSE]
+
+    # Init genotype matrix.
+    geno.mat <- matrix(NA_character_, nrow=nrow(x), ncol=ncol(x),
+                       dimnames=dimnames(x))
+
+    for ( j in get_col_indices(geno.mat) ) {
+
+        # Get sample symbols and genotypes for this
+        # locus, skip if effectively monomorphic.
+        x.symbols <- x[, j]
+        uniq.x.symbols <- unique(x.symbols)
+        uniq.x.geno <- uniq.x.symbols[ ! is.na(uniq.x.symbols) ]
+        if ( length(uniq.x.geno) < 2 ) {
+            next
+        }
+
+        # Get founder genotypes for this locus,
+        # skip if any are missing.
+        y.genotypes <- y[, j]
+        if ( anyNA(y.genotypes) ) {
+            next
+        }
+
+        # Get founder alleles, skip if monomorphic or heterozygous.
+        y.alleles <- lapply(y.genotypes, function(gt)
+            unique(strsplit(gt, '')[[1]]))
+        if ( anyDuplicated(y.alleles) || any( lengths(y.alleles) > 1 ) ) {
+            next
+        }
+        y.alleles <- unlist(y.alleles)
+
+        # Assign locus genotypes from matching founder.
+        x.calls <- lapply(x.symbols, function(gt) {
+            x.alleles <- strsplit(gt, '')[[1]]
+            x.indices <- match(x.alleles, y.alleles)
+            if ( anyNA(x.indices) ) {
+                x.genotype <- NA_character_
+            } else {
+                x.fdr.names <- names(y.alleles)[x.indices]
+                # Sort genotype alleles, since 'BA'
+                # is considered equivalent to 'AB'.
+                x.fdr.geno <- sort(allele.symbols[x.fdr.names])
+                x.genotype <- paste0(x.fdr.geno, collapse='')
+            }
+        })
+
+        # Skip if monomorphic after matching to founder alleles.
+        uniq.x.calls <- unique(x.calls[ ! is.na(x.calls) ])
+        if ( length(uniq.x.calls) < 2 ) {
+            next
+        }
+
+        geno.mat[, j] <- unlist(x.calls)
+    }
+
+    # Remove null loci.
+    geno.mat <- remove_na_cols(geno.mat)
+
+    if ( ncol(geno.mat) == 0 ) {
+        stop("cannot make genotype matrix - no suitable loci found")
+    }
+
+    return(geno.mat)
+}
+
+# make_snp_marker_ids
+#' Make SNP marker IDs for loci.
+#'
+#' @description This function creates SNP marker
+#' IDs from locus \code{data.frame} \code{'loc'}.
+#'
+#' @param loc Locus \code{data.frame}, with columns \code{'chr'} and
+#' \code{'pos'}, specifying physical map positions in base-pair units.
+#' @param max.seqlength Maximum expected sequence length. This determines
+#' the width to which SNP positions are zero-padded. By default, this is
+#' the maximum position in the input \code{data.frame}.
+#'
+#' @return Character vector of SNP marker IDs.
+#'
+#' @author Thomas A. Walsh
+#' @author Yue Hu
+#'
+#' @keywords internal
+#' @rdname make_snp_marker_ids
+make_snp_marker_ids <- function(loc, max.seqlength=NULL) {
+
+    stopifnot( is.data.frame(loc) )
+    stopifnot( nrow(loc) > 0 )
+
+    loc.pos <- loc$pos
+
+    max.pos <- max(loc.pos, na.rm=TRUE)
+    stopifnot( is_single_positive_whole_number(max.pos) )
+    max.pos.width <- floor(log10(max.pos)) + 1
+
+    pad.width <- NULL
+    if ( ! is.null(max.seqlength) ) {
+        stopifnot( is_single_positive_whole_number(max.seqlength) )
+        if ( max.pos <= max.seqlength ) {
+            pad.width <- floor(log10(max.seqlength)) + 1
+        } else {
+            warning("input position (", format(max.pos, scientific=FALSE), "",
+                    ") exceeds specified maximum sequence length (",
+                    format(max.seqlength, scientific=FALSE), "), padding to ",
+                    max.pos.width, " digits")
+        }
+    }
+
+    if ( is.null(pad.width) ) {
+        pad.width <- max.pos.width
+    }
+
+    pad.fmt.str <- paste0('%0', pad.width, 'd')
+    loc.pos <- sprintf(pad.fmt.str, loc.pos)
+
+    return( paste0(loc$chr, ':', loc.pos) )
+}
+
+# parse_snp_marker_ids
+#' Parse SNP marker IDs.
+#'
+#' This function parses an input vector of SNP marker IDs, and returns a \code{data.frame} with
+#' the locus in each row derived from the corresponding marker ID in the input vector. An error
+#' is raised if any of the input values cannot be parsed as a SNP marker ID.
+#'
+#' @param ids Vector of SNP marker IDs.
+#'
+#' @return A \code{data.frame} with loci
+#' corresponding to the SNP marker IDs.
+#'
+#' @keywords internal
+#' @rdname parse_snp_marker_ids
+parse_snp_marker_ids <- function(ids) {
+
+    snp_marker_id_patt = '^([^:]+):([[:digit:]]+)$'
+    m <- regexec(snp_marker_id_patt, ids)
+    regmatch.list <- regmatches(ids, m)
+
+    valid.snp.marker.ids <- lengths(regmatch.list) > 0
+    stopifnot( all(valid.snp.marker.ids) )
+
+    snp.seqs <- sapply(regmatch.list, getElement, 2)
+    snp.pos <- sapply(regmatch.list, function(x) as.numeric(x[3]))
+
+    return( data.frame(chr=snp.seqs, pos=snp.pos, row.names=ids, stringsAsFactors=FALSE) )
+}
+
+# read_snps_from_vcf
+#' Read SNP genotypes from VCF files.
+#'
+#' This function reads SNP genotype data from one or more VCF files, and returns
+#' these as a \code{matrix} of SNP genotypes - effectively variant base calls.
+#'
+#' @param infiles Input VCF file paths.
+#' @param samples Optional vector of samples for which SNP genotypes should be obtained.
+#' If not specified, genotypes are returned for all available samples.
+#' @param max.seqlength Optional parameter to indicate the maximum reference sequence length, which
+#' is used to determine the zero-padded width of genomic positions in SNP marker IDs. Without this
+#' information, SNP marker IDs may be formatted inconsistently in different datasets.
+#' @param require.all Remove variants that are not completely genotyped
+#' with respect to the given samples.
+#' @param require.any Remove variants that do not have at least one genotype
+#' call among the given samples.
+#' @param require.polymorphic Remove variants that do not have at least two
+#' different genotype calls among the given samples.
+#'
+#' @return A \code{matrix} object containing SNP genotype data.
+#'
+#' @keywords internal
+#' @rdname read_snps_from_vcf
+read_snps_from_vcf <- function(infiles, samples=NULL, max.seqlength=NULL,
+                               require.all=FALSE, require.any=FALSE,
+                               require.polymorphic=FALSE) {
+
+    stopifnot( length(infiles) > 0 )
+    stopifnot( isBOOL(require.all) )
+    stopifnot( isBOOL(require.any) )
+    stopifnot( isBOOL(require.polymorphic) )
+
+    # Get samples in each input VCF file.
+    sample.list <- lapply(infiles, read_samples_from_vcf)
+
+    # If samples specified, filter sample list, keep only those specified.
+    if ( ! is.null(samples) ) {
+
+        stopifnot( is.character(samples) )
+        stopifnot( length(samples) > 0 )
+
+        for ( i in seq_along(infiles) ) {
+            sample.list[[i]] <- sample.list[[i]][ sample.list[[i]] %in% samples ]
+        }
+
+        unfound <- samples[ ! samples %in% unlist(sample.list) ]
+        if ( length(unfound) > 0 ) {
+            stop("samples not found - '", toString(unfound), "'")
+        }
+    }
+
+    samples <- unlist(sample.list)
+
+    if ( length(samples) == 0 ) {
+        stop("no samples found")
+    }
+
+    dup.samples <- samples[ duplicated(samples) ]
+    if ( length(dup.samples) > 0 ) {
+        stop("duplicate samples - '", toString(dup.samples), "'")
+    }
+
+    invalid.ids <- samples[ ! is_valid_id(samples) ]
+    if ( length(invalid.ids) > 0 ) {
+        stop("invalid sample IDs - '", toString(invalid.ids), "'")
+    }
+
+    # Keep only files relevant for the given samples.
+    relevant <- lengths(sample.list) > 0
+    sample.list <- sample.list[relevant]
+    infiles <- infiles[relevant]
+
+    # Init list of SNP data.
+    snps <- vector('list', length(infiles))
+
+    # Init list for mapping genotype strings to allele indices.
+    geno.memo <- list()
+
+    # Read SNP genotypes from each input VCF file.
+    for ( i in seq_along(infiles) ) {
+
+        file.samples <- sample.list[[i]]
+        infile <- infiles[[i]]
+
+        # Set VCF parameters.
+        param <- VariantAnnotation::ScanVcfParam(fixed=c('ALT', 'QUAL'),
+                                                 geno='GT', samples=file.samples)
+
+        # Read VCF.
+        vcf <- VariantAnnotation::readVcf(infile, param=param)
+        stopifnot( length(vcf) > 0 )
+
+        # Get variant data from VCF.
+        var.seqs <- as.character( GenomeInfoDb::seqnames(vcf) ) # reference sequence
+        var.pos <- BiocGenerics::start( IRanges::ranges(vcf) )  # position
+        var.ref <- as.character( VariantAnnotation::ref(vcf) )  # reference allele
+        var.alt <- lapply( IRanges::CharacterList(              # alternative alleles
+            VariantAnnotation::alt(vcf) ), as.character)
+        var.geno <- VariantAnnotation::geno(vcf)                # genotype info
+        geno.mat <- t( var.geno$GT )                            # genotype calls
+
+        # Set indices of SNP variants.
+        snp.indices <- which( var.ref %in% Biostrings::DNA_BASES &
+                              sapply(var.alt, function(x) all(x %in% Biostrings::DNA_BASES)) )
+        num.snps <- length(snp.indices)
+        stopifnot( num.snps > 0 )
+
+        # Filter genotype data to retain only SNP variants.
+        geno.mat <- geno.mat[, snp.indices, drop=FALSE]
+
+        # Combine REF and ALT alleles for each SNP.
+        var.alleles <- lapply(snp.indices, function(j)
+            c(var.ref[j], var.alt[[j]]))
+
+        # Create dataframe with variant locus info.
+        snp.loc <- data.frame(chr=var.seqs[snp.indices],
+                              pos=var.pos[snp.indices])
+
+        # If maximum reference sequence length not
+        # specified, try to get that info from VCF.
+        if ( is.null(max.seqlength) ) {
+            seqinfo <- VariantAnnotation::seqinfo(vcf)
+            obs.seqnames <- unique(var.seqs)
+            known.seqnames <- GenomeInfoDb::seqnames(seqinfo)
+            unknown.seqnames <- setdiff(obs.seqnames, known.seqnames)
+            if ( ! anyNA(obs.seqnames) && length(unknown.seqnames) == 0 ) {
+                known.seqlengths <- stats::setNames(GenomeInfoDb::seqlengths(seqinfo),
+                                                    known.seqnames)
+                obs.seqlengths <- known.seqlengths[obs.seqnames]
+                max.obs.seqlength <- max(obs.seqlengths, na.rm=TRUE)
+                if ( is_single_positive_whole_number(max.obs.seqlength) ) {
+                    max.seqlength <- max.obs.seqlength
+                }
+            }
+        }
+        if ( is.null(max.seqlength) ) {
+            warning("maximum reference sequence length is unknown - ",
+                    "marker IDs may be inconsistent between datasets")
+        }
+
+        # Get marker IDs for SNPs in this file.
+        file.snps <- make_snp_marker_ids(snp.loc, max.seqlength=max.seqlength)
+
+        # Check for multiple variants coinciding at same locus.
+        # TODO: handle coinciding variants
+        if ( anyDuplicated(file.snps) ) {
+            stop("coinciding variants in file - '", infile, "'")
+        }
+
+        colnames(geno.mat) <- file.snps
+
+        # Resolve raw genotypes for each variant as concatenated base calls.
+        for ( j in 1:num.snps ) {
+
+            # Get vector of alleles for this variant record.
+            rec.alleles <- var.alleles[[j]]
+
+            # Get genotype strings for each sample in this variant record.
+            geno.data <- unname( geno.mat[, j] )
+
+            # Resolve previously unseen genotype strings
+            # to their corresponding allele indices.
+            for ( unique.call in unique(geno.data) ) {
+                if ( ! unique.call %in% names(geno.memo) ) {
+                    # Convert allele indices from 0-offset strings to
+                    # 1-offset integers, VCF missing '.' to NA value.
+                    indicesC <- unlist( strsplit(unique.call, '[/|]') )
+                    indices0 <- suppressWarnings( as.integer(indicesC) )
+                    indices1 <- indices0 + 1
+                    geno.memo[[unique.call]] <- indices1
+                }
+            }
+
+            # Resolve genotype calls for this variant record.
+            geno.calls <- lapply(geno.data, function(geno.str) {
+                alel.idxs <- geno.memo[[geno.str]]
+                alel.calls <- rec.alleles[alel.idxs]
+                if ( anyNA(alel.calls) ) {
+                    geno.call <- NA_character_
+                } else {
+                    geno.call <- paste0(alel.calls, collapse='')
+                }
+            })
+
+            geno.mat[, j] <- unlist(geno.calls)
+        }
+
+        # Set file variant data, sorting columns
+        # to facilitate subsequent merging.
+        snps[[i]] <- geno.mat[, order(colnames(geno.mat)), drop=FALSE]
+    }
+
+    # If multiple relevant files, combine SNP genotypes,
+    # taking the union of all variants in input files..
+    if ( length(infiles) > 1 ) {
+
+        # Prep combined variant data.
+        combined.samples <- sort( unique( unlist( lapply(snps, rownames) ) ) )
+        combined.snps <- sort( unique( unlist( lapply(snps, colnames) ) ) )
+        combined.names <- list(combined.samples, combined.snps)
+
+        # Set combined variant data from each input file.
+        # NB: we previously checked for duplicate samples and coinciding
+        # variants, so we can assume that there will be no conflicts.
+        result <- matrix(NA_character_, nrow=length(combined.samples),
+                         ncol=length(combined.snps), dimnames=combined.names)
+        for ( i in seq_along(snps) ) {
+            dest.idxs <- match(colnames(snps[[i]]), colnames(result))
+            for ( sample.id in rownames(snps[[i]]) ) {
+                result[sample.id, dest.idxs] <- snps[[i]][sample.id, ]
+            }
+        }
+
+    } else { # ..otherwise take single set of SNP genotypes.
+
+        result <- snps[[1]]
+    }
+
+    # Get combined number of SNP variants.
+    num.snps <- ncol(result)
+    stopifnot( num.snps > 0 )
+
+    # If filters specified, filter SNP variants.
+    if ( require.all || require.any || require.polymorphic ) {
+
+        mask <- rep(TRUE, num.snps)
+
+        if (require.all) { # Remove incomplete variants.
+            mask <- mask & sapply(1:num.snps, function(i)
+                ! anyNA(result[, i])
+            )
+        }
+
+        if (require.any) { # Remove variants without genotypes.
+            mask <- mask & sapply(1:num.snps, function(i)
+                ! all( is.na(result[, i]) )
+            )
+        }
+
+        if (require.polymorphic) { # Remove monomorphic variants.
+            mask <- mask & sapply(1:num.snps, function(i) {
+                geno.data <- result[, i]
+                g.symbols <- unique(geno.data)
+                genotypes <- g.symbols[ ! is.na(g.symbols) ]
+                return( length(genotypes) > 1 )
+            })
+        }
+
+        # Apply filter mask.
+        result <- result[, mask, drop=FALSE]
+    }
+
+    return(result)
+}
+
+# remove_na_cols
+#' Remove columns containing only \code{NA} values.
+#'
+#' @param x A \code{data.frame} or \code{matrix}.
+#'
+#' @return Input object without those columns that contain only \code{NA} values.
+#'
+#' @keywords internal
+#' @rdname remove_na_cols
+remove_na_cols <- function(x) {
+    stopifnot( is.data.frame(x) || is.matrix(x) )
+    stopifnot( nrow(x) > 0 )
+    mask <- ! apply( x, 2, function(column) all( is.na(as.vector(column)) ) )
+    x <- x[, mask, drop=FALSE]
+    return(x)
 }
 
 # End of internal.R

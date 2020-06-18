@@ -1,5 +1,5 @@
 Package: utl
-Version: 0.1.0
+Version: 0.2.0
 Date: 2020-06-18
 Title: Utility Functions for R/qtl Analysis
 Authors@R: c(person('Thomas', 'Walsh', role=c('aut', 'cre'), email='tw164@protonmail.com'),
@@ -14,7 +14,11 @@ URL: https://github.com/gact/utl
 Imports: graphics, qtl, stats, utils
 RoxygenNote: 7.1.0
 Collate: 
+    'convert_vcf_to_genfile.R'
     'internal.R'
     'get_qtl_intervals.R'
     'is_pseudomarker_id.R'
+    'load_seq_dict.R'
+    'mapping.R'
     'plot_qtl_scanone.R'
+    'read_samples_from_vcf.R'
